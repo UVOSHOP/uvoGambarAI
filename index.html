@@ -9,7 +9,7 @@
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: ##052420;
+            background-color: #128C7E;
         }
         #chat-container {
             width: 100%;
@@ -61,7 +61,7 @@
             word-wrap: break-word;
         }
         .ai-bubble {
-            background-color: ##0f1e04;
+            background-color: #DCF8C6;
             align-self: flex-start;
         }
         .user-bubble {
@@ -137,17 +137,21 @@
             let aiResponse = "Mencari gambar terkait...";
             displayMessage(aiResponse, 'ai');
 
-            // URL pencarian Pinterest berdasarkan kata kunci yang diminta oleh pengguna
-            let pinterestSearchUrl = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(userText)}&rs=typed`;
+            // Gambar dari Pinterest atau sumber lain (gunakan gambar manual)
+            let imageUrl = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(userText)}&rs=typed`;
 
-            // Tampilkan gambar hasil pencarian Pinterest
-            openPinterestSearch(pinterestSearchUrl);
+            // Gambar pertama akan langsung ditampilkan ke chat
+            displayImage(imageUrl);
         }
 
-        function openPinterestSearch(url) {
-            // Mengarahkan pengguna ke pencarian Pinterest dalam tab baru
-            window.open(url, "_blank");
-            displayMessage("Klik untuk melihat hasil pencarian di Pinterest.", "ai");
+        function displayImage(url) {
+            let image = document.createElement("img");
+            image.src = url; // Gambar URL
+            image.alt = "Gambar hasil pencarian";
+            image.classList.add("image-result");
+
+            chatBox.appendChild(image);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
     </script>
 </body>
