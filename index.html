@@ -6,49 +6,76 @@
     <title>UvoAI Gambar</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #1e3a8a;
-            color: white;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #128C7E;
         }
 
         #chat-container {
-            max-width: 400px;
+            width: 100%;
+            max-width: 480px;
+            height: 90vh;
             margin: 50px auto;
-            background-color: #1e3a8a;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
         }
 
         #chat-box {
+            flex-grow: 1;
             overflow-y: auto;
-            height: 300px;
             padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
         }
 
         #input-box {
             display: flex;
-            margin-top: 10px;
+            padding: 10px;
+            background-color: #ECE5DD;
+            border-radius: 20px;
             align-items: center;
         }
 
         #user-input {
-            width: 75%;
+            width: 85%;
             padding: 10px;
+            border: 2px solid #ddd;
             border-radius: 20px;
-            border: none;
             margin-right: 10px;
+            font-size: 16px;
+            outline: none;
         }
 
         #send-btn {
-            padding: 10px;
-            background-color: orange;
+            padding: 10px 15px;
+            background-color: #25D366;
             color: white;
             border: none;
-            border-radius: 20px;
+            border-radius: 50%;
             cursor: pointer;
+        }
+
+        .chat-bubble {
+            max-width: 75%;
+            padding: 8px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+
+        .ai-bubble {
+            background-color: #DCF8C6;
+            align-self: flex-start;
+        }
+
+        .user-bubble {
+            background-color: #25D366;
+            color: white;
+            align-self: flex-end;
         }
 
         #image-container {
@@ -58,23 +85,9 @@
             margin-top: 10px;
         }
 
-        .chat-bubble {
-            background-color: #4b8eeb;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            max-width: 70%;
-            word-wrap: break-word;
-        }
-
-        .ai-bubble {
-            background-color: #3751d1;
-            align-self: flex-start;
-        }
-
-        .user-bubble {
-            background-color: #4CAF50;
-            align-self: flex-end;
+        #image-container img {
+            width: 100px;
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -82,8 +95,8 @@
     <div id="chat-container">
         <div id="chat-box"></div>
         <div id="input-box">
-            <input type="text" id="user-input" placeholder="Ketik perintah..." disabled>
-            <button id="send-btn" onclick="sendMessage()" disabled>Send</button>
+            <input type="text" id="user-input" placeholder="Ketik perintah..." />
+            <button id="send-btn" onclick="sendMessage()">Send</button>
         </div>
         <div id="image-container"></div>
     </div>
@@ -94,6 +107,12 @@
         let sendBtn = document.getElementById("send-btn");
         let imageContainer = document.getElementById("image-container");
 
+        // Aktifkan tombol kirim jika input ada
+        userInput.addEventListener("input", () => {
+            sendBtn.disabled = !userInput.value.trim();
+        });
+
+        // Kirim pesan pengguna
         function sendMessage() {
             let userText = userInput.value.trim();
             if (userText === "") return;
@@ -103,13 +122,13 @@
 
             userInput.value = "";
             sendBtn.disabled = true;
-            userInput.disabled = true;
 
             setTimeout(() => {
                 getAIResponse(userText);
             }, 1000);
         }
 
+        // Menampilkan pesan pada chat
         function displayMessage(text, sender) {
             let bubble = document.createElement("div");
             bubble.classList.add("chat-bubble");
@@ -119,33 +138,32 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        // Mendapatkan respons AI (dummy response dan gambar)
         function getAIResponse(userText) {
             let aiResponse = "Gambar yang cocok sedang diproses..."; // Example response
 
-            // Here you would connect to your AI service to get an image URL based on userText
-            // This is a dummy image URL for the sake of this example
+            // Gambar contoh (dummy)
             let imageUrl = "https://via.placeholder.com/100";
 
             displayMessage(aiResponse, 'ai');
             displayImage(imageUrl);
 
-            // Enable input for next prompt if not at limit
+            // Enable input and send button for next prompt if not at limit
             if (messageCount < 50) {
                 userInput.disabled = false;
-                sendBtn.disabled = false;
             } else {
                 sendFormToWA();
             }
         }
 
+        // Menampilkan gambar AI
         function displayImage(imageUrl) {
             let imgElement = document.createElement("img");
             imgElement.src = imageUrl;
-            imgElement.style.width = "100px";
-            imgElement.style.marginRight = "10px";
             imageContainer.appendChild(imgElement);
         }
 
+        // Kirim formulir pembelian AI Pro jika mencapai batas
         function sendFormToWA() {
             let waURL = "https://wa.me/6285648211278?text=Formulir%20Pembelian%20AI%20Pro%20Rp%204999";
             window.location.href = waURL; // Redirect to WhatsApp with form
