@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UvoAI Gambar</title>
     <style>
-        /* Body dasar */
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #128C7E; /* Warna biru tua (seperti WhatsApp) */
+            background-color: #128C7E;
         }
-
-        /* Kontainer utama */
         #chat-container {
             width: 100%;
             max-width: 480px;
@@ -24,8 +21,6 @@
             display: flex;
             flex-direction: column;
         }
-
-        /* Kotak chat */
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
@@ -34,8 +29,6 @@
             display: flex;
             flex-direction: column;
         }
-
-        /* Input box */
         #input-box {
             display: flex;
             padding: 10px;
@@ -43,8 +36,6 @@
             border-radius: 20px;
             align-items: center;
         }
-
-        /* Input teks pengguna */
         #user-input {
             width: 85%;
             padding: 10px;
@@ -54,8 +45,6 @@
             font-size: 16px;
             outline: none;
         }
-
-        /* Tombol kirim */
         #send-btn {
             padding: 10px 15px;
             background-color: #25D366;
@@ -64,8 +53,6 @@
             border-radius: 50%;
             cursor: pointer;
         }
-
-        /* Bubbles chat */
         .chat-bubble {
             max-width: 75%;
             padding: 8px;
@@ -73,32 +60,19 @@
             margin-bottom: 10px;
             word-wrap: break-word;
         }
-
-        /* Bubble AI */
         .ai-bubble {
             background-color: #DCF8C6;
             align-self: flex-start;
         }
-
-        /* Bubble pengguna */
         .user-bubble {
             background-color: #25D366;
             color: white;
             align-self: flex-end;
         }
-
-        /* Kontainer gambar */
-        #image-container {
-            display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
+        .image-result {
+            max-width: 100%;
+            border-radius: 10px;
             margin-top: 10px;
-        }
-
-        /* Gambar dalam kontainer */
-        #image-container img {
-            width: 100px;
-            margin-right: 10px;
         }
     </style>
 </head>
@@ -109,7 +83,6 @@
             <input type="text" id="user-input" placeholder="Ketik perintah..." />
             <button id="send-btn" onclick="sendMessage()">Send</button>
         </div>
-        <div id="image-container"></div>
     </div>
 
     <script>
@@ -118,24 +91,13 @@
         let chatBox = document.getElementById("chat-box");
         let userInput = document.getElementById("user-input");
         let sendBtn = document.getElementById("send-btn");
-        let imageContainer = document.getElementById("image-container");
-        let isProcessing = false;
 
-        const imageDatabase = {
-            "mobil": ["images/mobil1.jpg", "images/mobil2.jpg", "images/mobil3.jpg"],
-            "pohon": ["images/pohon1.jpg", "images/pohon2.jpg", "images/pohon3.jpg"],
-            "anjing": ["images/anjing1.jpg", "images/anjing2.jpg", "images/anjing3.jpg"],
-            "kucing": ["images/kucing1.jpg", "images/kucing2.jpg", "images/kucing3.jpg"]
-        };
-
-        // Fungsi untuk kirim pesan
         userInput.addEventListener("input", () => {
-            sendBtn.disabled = !userInput.value.trim() || isProcessing;
+            sendBtn.disabled = !userInput.value.trim();
         });
 
-        // Fungsi untuk kirim pesan saat menekan Enter
         userInput.addEventListener("keypress", function(event) {
-            if (event.key === "Enter" && !isProcessing) {
+            if (event.key === "Enter") {
                 event.preventDefault();
                 sendMessage();
             }
@@ -146,7 +108,6 @@
             if (userText === "") return;
 
             if (messageCount >= messageLimit) {
-                // Kirim formulir pembelian AI Pro ke WA jika limit tercapai
                 window.location.href = "https://wa.me/6285648211278?text=Formulir%20pembelian%20AI%20Pro%20harga%20Rp%204999";
                 return;
             }
@@ -157,7 +118,6 @@
             userInput.value = "";
             sendBtn.disabled = true;
             userInput.disabled = true;
-            isProcessing = true;
 
             setTimeout(() => {
                 getAIResponse(userText);
@@ -173,34 +133,21 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Fungsi untuk mendapatkan respons AI dengan pencarian gambar lokal
         function getAIResponse(userText) {
-            let aiResponse = "Gambar yang cocok sedang diproses..."; // Example response
+            let aiResponse = "Mencari gambar terkait...";
             displayMessage(aiResponse, 'ai');
-            searchLocalImages(userText);  // Cari gambar dari folder lokal
+
+            // URL pencarian Pinterest berdasarkan kata kunci yang diminta oleh pengguna
+            let pinterestSearchUrl = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(userText)}&rs=typed`;
+
+            // Tampilkan gambar hasil pencarian Pinterest
+            openPinterestSearch(pinterestSearchUrl);
         }
 
-        // Fungsi untuk mencari gambar dari folder lokal
-        function searchLocalImages(query) {
-            if (imageDatabase[query]) {
-                // Pilih gambar secara acak dari kumpulan gambar yang relevan
-                let images = imageDatabase[query];
-                images.forEach(img => {
-                    let imgElement = document.createElement("img");
-                    imgElement.src = img;  // Menampilkan gambar sesuai dengan nama file
-                    imageContainer.appendChild(imgElement);
-                });
-            } else {
-                let noImageFound = document.createElement("div");
-                noImageFound.classList.add("chat-bubble");
-                noImageFound.classList.add("ai-bubble");
-                noImageFound.textContent = "Maaf, gambar tidak ditemukan.";
-                chatBox.appendChild(noImageFound);
-            }
-            isProcessing = false;
-            sendBtn.disabled = false;
-            userInput.disabled = false;
-            userInput.focus();
+        function openPinterestSearch(url) {
+            // Mengarahkan pengguna ke pencarian Pinterest dalam tab baru
+            window.open(url, "_blank");
+            displayMessage("Klik untuk melihat hasil pencarian di Pinterest.", "ai");
         }
     </script>
 </body>
