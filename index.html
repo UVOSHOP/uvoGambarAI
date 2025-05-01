@@ -38,8 +38,6 @@
       padding: 10px;
       overflow-y: auto;
       background: #e5ddd5;
-      display: flex;
-      flex-direction: column;
     }
 
     .chat-bubble {
@@ -47,7 +45,6 @@
       margin: 5px;
       border-radius: 10px;
       max-width: 80%;
-      word-wrap: break-word;
     }
 
     .chat-bubble.user {
@@ -82,6 +79,11 @@
       padding: 10px 20px;
       cursor: pointer;
     }
+
+    .chat-input button:disabled {
+      background-color: gray;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -97,31 +99,33 @@
   <script>
     let isProcessing = false;
 
-    document.getElementById("sendButton").addEventListener("click", sendPrompt);
-    document.getElementById("userInput").addEventListener("keydown", function(e) {
+    const input = document.getElementById("userInput");
+    const sendButton = document.getElementById("sendButton");
+    const chatBox = document.getElementById("chatBox");
+
+    sendButton.addEventListener("click", sendPrompt);
+    input.addEventListener("keydown", function(e) {
       if (e.key === "Enter") sendPrompt();
     });
 
     function sendPrompt() {
       if (isProcessing) return;
-      const input = document.getElementById("userInput");
-      const chatBox = document.getElementById("chatBox");
       const prompt = input.value.trim();
       if (!prompt) return;
 
       isProcessing = true;
+      sendButton.disabled = true;
+      input.disabled = true;
 
       const userBubble = document.createElement("div");
       userBubble.className = "chat-bubble user";
       userBubble.textContent = prompt;
       chatBox.appendChild(userBubble);
-      chatBox.scrollTop = chatBox.scrollHeight;
 
       const botBubble = document.createElement("div");
       botBubble.className = "chat-bubble bot";
       botBubble.textContent = "Sedang memproses gambar...";
       chatBox.appendChild(botBubble);
-      chatBox.scrollTop = chatBox.scrollHeight;
 
       fetch(`http://localhost:5000/generate?prompt=${encodeURIComponent(prompt)}`)
         .then(res => {
@@ -135,14 +139,16 @@
           img.style.maxWidth = "100%";
           img.style.borderRadius = "10px";
           botBubble.appendChild(img);
-          chatBox.scrollTop = chatBox.scrollHeight;
         })
         .catch(err => {
-          botBubble.textContent = "Gagal memproses gambar. Pastikan Python berjalan.";
+          botBubble.textContent = "Gagal memproses gambar. Pastikan Python aktif.";
           console.error(err);
         })
         .finally(() => {
           isProcessing = false;
+          sendButton.disabled = false;
+          input.disabled = false;
+          input.focus();
         });
 
       input.value = "";
