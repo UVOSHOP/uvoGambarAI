@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UvoAI Gambar</title>
     <style>
+        /* Body dasar */
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #128C7E;
+            background-color: #128C7E; /* Warna biru tua (seperti WhatsApp) */
         }
 
+        /* Kontainer utama */
         #chat-container {
             width: 100%;
             max-width: 480px;
@@ -23,6 +25,7 @@
             flex-direction: column;
         }
 
+        /* Kotak chat */
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
@@ -32,6 +35,7 @@
             flex-direction: column;
         }
 
+        /* Input box */
         #input-box {
             display: flex;
             padding: 10px;
@@ -40,6 +44,7 @@
             align-items: center;
         }
 
+        /* Input teks pengguna */
         #user-input {
             width: 85%;
             padding: 10px;
@@ -50,6 +55,7 @@
             outline: none;
         }
 
+        /* Tombol kirim */
         #send-btn {
             padding: 10px 15px;
             background-color: #25D366;
@@ -59,6 +65,7 @@
             cursor: pointer;
         }
 
+        /* Bubbles chat */
         .chat-bubble {
             max-width: 75%;
             padding: 8px;
@@ -67,17 +74,20 @@
             word-wrap: break-word;
         }
 
+        /* Bubble AI */
         .ai-bubble {
             background-color: #DCF8C6;
             align-self: flex-start;
         }
 
+        /* Bubble pengguna */
         .user-bubble {
             background-color: #25D366;
             color: white;
             align-self: flex-end;
         }
 
+        /* Kontainer gambar */
         #image-container {
             display: flex;
             flex-wrap: nowrap;
@@ -85,6 +95,7 @@
             margin-top: 10px;
         }
 
+        /* Gambar dalam kontainer */
         #image-container img {
             width: 100px;
             margin-right: 10px;
@@ -100,35 +111,59 @@
         </div>
         <div id="image-container"></div>
     </div>
+
     <script>
         let messageCount = 0;
+        const messageLimit = 10; // Set limit chat 10
         let chatBox = document.getElementById("chat-box");
         let userInput = document.getElementById("user-input");
         let sendBtn = document.getElementById("send-btn");
         let imageContainer = document.getElementById("image-container");
+        let isProcessing = false;
 
-        // Aktifkan tombol kirim jika input ada
+        const imageDatabase = {
+            "mobil": ["images/mobil1.jpg", "images/mobil2.jpg", "images/mobil3.jpg"],
+            "pohon": ["images/pohon1.jpg", "images/pohon2.jpg", "images/pohon3.jpg"],
+            "anjing": ["images/anjing1.jpg", "images/anjing2.jpg", "images/anjing3.jpg"],
+            "kucing": ["images/kucing1.jpg", "images/kucing2.jpg", "images/kucing3.jpg"]
+        };
+
+        // Fungsi untuk kirim pesan
         userInput.addEventListener("input", () => {
-            sendBtn.disabled = !userInput.value.trim();
+            sendBtn.disabled = !userInput.value.trim() || isProcessing;
         });
 
-        // Kirim pesan pengguna
+        // Fungsi untuk kirim pesan saat menekan Enter
+        userInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter" && !isProcessing) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
         function sendMessage() {
-            let userText = userInput.value.trim();
+            let userText = userInput.value.trim().toLowerCase();
             if (userText === "") return;
+
+            if (messageCount >= messageLimit) {
+                // Kirim formulir pembelian AI Pro ke WA jika limit tercapai
+                window.location.href = "https://wa.me/6285648211278?text=Formulir%20pembelian%20AI%20Pro%20harga%20Rp%204999";
+                return;
+            }
 
             messageCount++;
             displayMessage(userText, 'user');
 
             userInput.value = "";
             sendBtn.disabled = true;
+            userInput.disabled = true;
+            isProcessing = true;
 
             setTimeout(() => {
                 getAIResponse(userText);
             }, 1000);
         }
 
-        // Menampilkan pesan pada chat
         function displayMessage(text, sender) {
             let bubble = document.createElement("div");
             bubble.classList.add("chat-bubble");
@@ -138,35 +173,34 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Mendapatkan respons AI (dummy response dan gambar)
+        // Fungsi untuk mendapatkan respons AI dengan pencarian gambar lokal
         function getAIResponse(userText) {
             let aiResponse = "Gambar yang cocok sedang diproses..."; // Example response
-
-            // Gambar contoh (dummy)
-            let imageUrl = "https://via.placeholder.com/100";
-
             displayMessage(aiResponse, 'ai');
-            displayImage(imageUrl);
+            searchLocalImages(userText);  // Cari gambar dari folder lokal
+        }
 
-            // Enable input and send button for next prompt if not at limit
-            if (messageCount < 50) {
-                userInput.disabled = false;
+        // Fungsi untuk mencari gambar dari folder lokal
+        function searchLocalImages(query) {
+            if (imageDatabase[query]) {
+                // Pilih gambar secara acak dari kumpulan gambar yang relevan
+                let images = imageDatabase[query];
+                images.forEach(img => {
+                    let imgElement = document.createElement("img");
+                    imgElement.src = img;  // Menampilkan gambar sesuai dengan nama file
+                    imageContainer.appendChild(imgElement);
+                });
             } else {
-                sendFormToWA();
+                let noImageFound = document.createElement("div");
+                noImageFound.classList.add("chat-bubble");
+                noImageFound.classList.add("ai-bubble");
+                noImageFound.textContent = "Maaf, gambar tidak ditemukan.";
+                chatBox.appendChild(noImageFound);
             }
-        }
-
-        // Menampilkan gambar AI
-        function displayImage(imageUrl) {
-            let imgElement = document.createElement("img");
-            imgElement.src = imageUrl;
-            imageContainer.appendChild(imgElement);
-        }
-
-        // Kirim formulir pembelian AI Pro jika mencapai batas
-        function sendFormToWA() {
-            let waURL = "https://wa.me/6285648211278?text=Formulir%20Pembelian%20AI%20Pro%20Rp%204999";
-            window.location.href = waURL; // Redirect to WhatsApp with form
+            isProcessing = false;
+            sendBtn.disabled = false;
+            userInput.disabled = false;
+            userInput.focus();
         }
     </script>
 </body>
