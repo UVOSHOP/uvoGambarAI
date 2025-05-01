@@ -1,158 +1,155 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>UvoAI Gambar</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #001f3f;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UvoAI Gambar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e3a8a;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
 
-    .chat-container {
-      background: #fff;
-      border-radius: 10px;
-      width: 100%;
-      max-width: 400px;
-      height: 90vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 0 10px #000;
-      overflow: hidden;
-    }
+        #chat-container {
+            max-width: 400px;
+            margin: 50px auto;
+            background-color: #1e3a8a;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-    .chat-header {
-      padding: 15px;
-      background-color: #075e54;
-      color: white;
-      font-weight: bold;
-    }
+        #chat-box {
+            overflow-y: auto;
+            height: 300px;
+            padding: 10px;
+        }
 
-    .chat-box {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      background: #e5ddd5;
-    }
+        #input-box {
+            display: flex;
+            margin-top: 10px;
+            align-items: center;
+        }
 
-    .chat-bubble {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 10px;
-      max-width: 80%;
-    }
+        #user-input {
+            width: 75%;
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
+            margin-right: 10px;
+        }
 
-    .chat-bubble.user {
-      background-color: #dcf8c6;
-      align-self: flex-end;
-    }
+        #send-btn {
+            padding: 10px;
+            background-color: orange;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
 
-    .chat-bubble.bot {
-      background-color: #fff;
-      align-self: flex-start;
-    }
+        #image-container {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
 
-    .chat-input {
-      display: flex;
-      padding: 10px;
-      background-color: #f0f0f0;
-    }
+        .chat-bubble {
+            background-color: #4b8eeb;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
 
-    .chat-input input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 20px;
-      border: none;
-    }
+        .ai-bubble {
+            background-color: #3751d1;
+            align-self: flex-start;
+        }
 
-    .chat-input button {
-      margin-left: 10px;
-      background-color: orange;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      padding: 10px 20px;
-      cursor: pointer;
-    }
-
-    .chat-input button:disabled {
-      background-color: gray;
-      cursor: not-allowed;
-    }
-  </style>
+        .user-bubble {
+            background-color: #4CAF50;
+            align-self: flex-end;
+        }
+    </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header">UvoAI - AI Gambar</div>
-    <div class="chat-box" id="chatBox"></div>
-    <div class="chat-input">
-      <input type="text" id="userInput" placeholder="Tulis deskripsi gambar..." />
-      <button id="sendButton">Kirim</button>
+    <div id="chat-container">
+        <div id="chat-box"></div>
+        <div id="input-box">
+            <input type="text" id="user-input" placeholder="Ketik perintah..." disabled>
+            <button id="send-btn" onclick="sendMessage()" disabled>Send</button>
+        </div>
+        <div id="image-container"></div>
     </div>
-  </div>
+    <script>
+        let messageCount = 0;
+        let chatBox = document.getElementById("chat-box");
+        let userInput = document.getElementById("user-input");
+        let sendBtn = document.getElementById("send-btn");
+        let imageContainer = document.getElementById("image-container");
 
-  <script>
-    let isProcessing = false;
+        function sendMessage() {
+            let userText = userInput.value.trim();
+            if (userText === "") return;
 
-    const input = document.getElementById("userInput");
-    const sendButton = document.getElementById("sendButton");
-    const chatBox = document.getElementById("chatBox");
+            messageCount++;
+            displayMessage(userText, 'user');
 
-    sendButton.addEventListener("click", sendPrompt);
-    input.addEventListener("keydown", function(e) {
-      if (e.key === "Enter") sendPrompt();
-    });
+            userInput.value = "";
+            sendBtn.disabled = true;
+            userInput.disabled = true;
 
-    function sendPrompt() {
-      if (isProcessing) return;
-      const prompt = input.value.trim();
-      if (!prompt) return;
+            setTimeout(() => {
+                getAIResponse(userText);
+            }, 1000);
+        }
 
-      isProcessing = true;
-      sendButton.disabled = true;
-      input.disabled = true;
+        function displayMessage(text, sender) {
+            let bubble = document.createElement("div");
+            bubble.classList.add("chat-bubble");
+            bubble.classList.add(sender === 'user' ? "user-bubble" : "ai-bubble");
+            bubble.textContent = text;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
 
-      const userBubble = document.createElement("div");
-      userBubble.className = "chat-bubble user";
-      userBubble.textContent = prompt;
-      chatBox.appendChild(userBubble);
+        function getAIResponse(userText) {
+            let aiResponse = "Gambar yang cocok sedang diproses..."; // Example response
 
-      const botBubble = document.createElement("div");
-      botBubble.className = "chat-bubble bot";
-      botBubble.textContent = "Sedang memproses gambar...";
-      chatBox.appendChild(botBubble);
+            // Here you would connect to your AI service to get an image URL based on userText
+            // This is a dummy image URL for the sake of this example
+            let imageUrl = "https://via.placeholder.com/100";
 
-      fetch(`http://localhost:5000/generate?prompt=${encodeURIComponent(prompt)}`)
-        .then(res => {
-          if (!res.ok) throw new Error("Gagal merespons");
-          return res.blob();
-        })
-        .then(blob => {
-          botBubble.textContent = "";
-          const img = document.createElement("img");
-          img.src = URL.createObjectURL(blob);
-          img.style.maxWidth = "100%";
-          img.style.borderRadius = "10px";
-          botBubble.appendChild(img);
-        })
-        .catch(err => {
-          botBubble.textContent = "Gagal memproses gambar. Pastikan Python aktif.";
-          console.error(err);
-        })
-        .finally(() => {
-          isProcessing = false;
-          sendButton.disabled = false;
-          input.disabled = false;
-          input.focus();
-        });
+            displayMessage(aiResponse, 'ai');
+            displayImage(imageUrl);
 
-      input.value = "";
-    }
-  </script>
+            // Enable input for next prompt if not at limit
+            if (messageCount < 50) {
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+            } else {
+                sendFormToWA();
+            }
+        }
+
+        function displayImage(imageUrl) {
+            let imgElement = document.createElement("img");
+            imgElement.src = imageUrl;
+            imgElement.style.width = "100px";
+            imgElement.style.marginRight = "10px";
+            imageContainer.appendChild(imgElement);
+        }
+
+        function sendFormToWA() {
+            let waURL = "https://wa.me/6285648211278?text=Formulir%20Pembelian%20AI%20Pro%20Rp%204999";
+            window.location.href = waURL; // Redirect to WhatsApp with form
+        }
+    </script>
 </body>
 </html>
